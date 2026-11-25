@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Адвент-календарь: 30 дней до Нового года</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: 
+                radial-gradient(ellipse at top, #2a1810 0%, #1a0f08 50%, #0d0705 100%);
+            min-height: 100vh;
+            padding: 30px 20px;
+            color: #fff;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Эффект гирлянд и боке на фоне */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(255, 200, 100, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 90% 80%, rgba(255, 150, 100, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(255, 220, 150, 0.08) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Мерцающие огоньки */
+        .lights {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .light {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #ffd700;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #ffd700, 0 0 20px #ff8c00;
+            animation: twinkle 3s ease-in-out infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.3); }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .christmas-tree {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.5));
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            color: #fff;
+            font-style: italic;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+        }
+
+        .subtitle-banner {
+            display: inline-block;
+            background: linear-gradient(90deg, #8b0000, #cc0000, #8b0000);
+            padding: 12px 40px;
+            border-radius: 5px;
+            font-size: 1.5rem;
+            color: #ffd700;
+            font-weight: bold;
+            box-shadow: 0 5px 20px rgba(139, 0, 0, 0.5);
+            margin-bottom: 20px;
+        }
+
+        .description {
+            color: #ffd700;
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .description::before,
+        .description::after {
+            content: '✨';
+            margin: 0 10px;
+        }
+
+        /* Сетка конвертов */
+        .advent-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .envelope-container {
+            perspective: 1000px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .envelope {
+            width: 100%;
+            aspect-ratio: 1;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .envelope-container.opened .envelope {
+            transform: rotateX(180deg);
+        }
+
+        .envelope-front, .envelope-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Лицевая сторона конверта */
+        .envelope-front {
+            background: linear-gradient(135deg, #f5e6d3 0%, #e8d4b8 100%);
+            border: 2px solid #c9a87c;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Треугольный клапан конверта */
+        .envelope-front::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 50% solid transparent;
+            border-right: 50% solid transparent;
+            border-top: 40% solid #d4b896;
+            z-index: 2;
+        }
+
+        /* Декор на конверте */
+        .envelope-front::after {
+            content: '';
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, #2d5016 30%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .day-number {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 30px;
+            height: 30px;
+            background: #cc0000;
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1rem;
+            z-index: 3;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .envelope-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            z-index: 1;
+        }
+
+        .envelope-text {
+            color: #5a3a1a;
+            font-size: 0.85rem;
+            text-align: center;
+            line-height: 1.3;
+            z-index: 1;
+            font-weight: 600;
+        }
+
+        /* Обратная сторона (открытый конверт) */
+        .envelope-back {
+            background: linear-gradient(135deg, #fff8e7 0%, #f5e6d3 100%);
+            border: 2px solid #ffd700;
+            transform: rotateX(180deg);
+        }
+
+        .back-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .back-title {
+            color: #8b0000;
+            font-size: 1rem;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .back-hint {
+            color: #5a3a1a;
+            font-size: 0.8rem;
+            text-align: center;
+        }
+
+        /* Модальное окно */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #f5e6d3 0%, #e8d4b8 100%);
+            border: 3px solid #ffd700;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 0 50px rgba(255, 215, 0, 0.3);
+            animation: slideUp 0.4s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 2rem;
+            color: #cc0000;
+            cursor: pointer;
+            background: none;
+            border: none;
+            transition: transform 0.3s ease;
+            font-weight: bold;
+        }
+
+        .modal-close:hover {
+            transform: rotate(90deg);
+        }
+
+        .modal-day {
+            display: inline-block;
+            background: #cc0000;
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 40px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+
+        .modal h2 {
+            color: #8b0000;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            line-height: 1.4;
+        }
+
+        .modal-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .modal p {
+            color: #5a3a1a;
+            line-height: 1.8;
+            font-size: 1.05rem;
+        }
+
+        /* Прогресс */
+        .progress {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #ffd700;
+            font-size: 1.1rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            max-width: 400px;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            margin: 10px auto;
+            overflow: hidden;
+            border: 1px solid #ffd700;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #cc0000, #ffd700);
+            transition: width 0.5s ease;
+            border-radius: 6px;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 1200px) {
+            .advent-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .advent-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 15px;
+            }
+            h1 {
+                font-size: 2.5rem;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .advent-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 12px;
+            }
+            h1 {
+                font-size: 2rem;
+            }
+            .subtitle-banner {
+                font-size: 1.2rem;
+                padding: 10px 25px;
+            }
+            .envelope-icon {
+                font-size: 2rem;
+            }
+            .envelope-text {
+                font-size: 0.75rem;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .advent-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Снежинки */
+        .snowflake {
+            position: fixed;
+            top: -10px;
+            color: #fff;
+            font-size: 1.5rem;
+            animation: fall linear infinite;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.6;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Мерцающие огоньки -->
+    <div class="lights" id="lights"></div>
+
+    <div class="container">
+        <header>
+            <div class="christmas-tree">🎄</div>
+            <h1>Адвент-календарь</h1>
+            <div class="subtitle-banner">30 дней до Нового года</div>
+            <p class="description">Простые задания, идеи и вдохновение для праздничного настроения!</p>
+        </header>
+
+        <div class="progress">
+            <div>Открыто заданий: <span id="opened-count">0</span> из 30</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <div class="advent-grid" id="advent-grid"></div>
+    </div>
+
+    <!-- Модальное окно -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">×</button>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <script>
+        // 30 заданий адвент-календаря
+        const tasks = [
+            { day: 1, icon: '☕', title: 'Приготовь зимний напиток', desc: 'Свари глинтвейн, какао с маршмеллоу или пряный чай с корицей. Устрой себе уютный вечер с любимой книгой или фильмом.' },
+            { day: 2, icon: '📝', title: 'Составь список желаний', desc: 'Запиши 10 вещей, которые хочешь получить или сделать в новом году. Будь конкретен(на) — Вселенная любит точность!' },
+            { day: 3, icon: '💡', title: 'Укрась комнату огоньками', desc: 'Развесь гирлянды, зажги свечи, создай атмосферу волшебства. Пусть твой дом сияет!' },
+            { day: 4, icon: '🌿', title: 'Сделай доброе дело', desc: 'Помоги соседу, накорми бездомных животных, переведи небольшую сумму в благотворительный фонд. Добро возвращается!' },
+            { day: 5, icon: '🍪', title: 'Испеки новогоднее печенье', desc: 'Найди рецепт имбирных пряников или песочного печенья. Приготовь вместе с близкими — это сближает!' },
+            { day: 6, icon: '❄️', title: 'Посмотри новогодний фильм', desc: '«Один дома», «Ирония судьбы», «Реальная любовь» — выбери свой любимый и насладись атмосферой праздника.' },
+            { day: 7, icon: '🎁', title: 'Придумай подарки для близких', desc: 'Не обязательно дорогие! Подумай, что действительно порадует каждого. Иногда лучшее — это время, проведённое вместе.' },
+            { day: 8, icon: '☕', title: 'Устрой вечер уюта', desc: 'Плед, горячий шоколад, любимая музыка. Отключи телефон на 2 часа и просто побудь в тишине.' },
+            { day: 9, icon: '📷', title: 'Сделай зимнее фото', desc: 'Выйди на улицу и сфотографируй красоту зимы: снежинки, иней, заснеженные деревья. Сохрани этот момент!' },
+            { day: 10, icon: '🕯️', title: 'Проведи вечер без гаджетов', desc: 'Отложи телефон, выключи телевизор. Поиграй в настолки, поговори с близкими, почитай книгу.' },
+            { day: 11, icon: '❤️', title: 'Свяжи или сделай что-то своими руками', desc: 'Шарф, открытка, свеча, украшение на ёлку. Ручная работа — это тепло, которое нельзя купить.' },
+            { day: 12, icon: '📖', title: 'Почитай зимнюю книгу', desc: '«Рождественская песнь» Диккенса, «Щелкунчик», или любая книга, которая создаёт праздничное настроение.' },
+            { day: 13, icon: '💌', title: 'Напиши тёплое письмо близкому человеку', desc: 'Не сообщение, а настоящее письмо. От руки. Расскажи, как ты его ценишь. Это бесценно.' },
+            { day: 14, icon: '🎵', title: 'Послушай новогодний плейлист', desc: 'Собери свою подборку праздничных песен или найди готовую. Пусть музыка создаёт настроение!' },
+            { day: 15, icon: '⛄', title: 'Слепи снеговика (или сделай его дома)', desc: 'Если есть снег — лепи! Если нет — сделай снеговика из носков, бумаги или пластилина.' },
+            { day: 16, icon: '🍊', title: 'Добавь зимний аромат в дом', desc: 'Апельсины, корица, ель, мандарины. Создай запах праздника — он мгновенно поднимает настроение!' },
+            { day: 17, icon: '🎄', title: 'Сделай новогоднюю открытку', desc: 'Нарисуй, создай в редакторе или купи красивую. Подпиши от души и отправь тому, кто далеко.' },
+            { day: 18, icon: '🎄', title: 'Нарисуй планы на следующий год', desc: 'Не просто список, а визуальную карту: что хочешь достичь, куда поехать, чему научиться.' },
+            { day: 19, icon: '🎁', title: 'Упакуй первые подарки', desc: 'Красивая бумага, ленты, бирки с именами. Процесс упаковки — это уже часть праздника!' },
+            { day: 20, icon: '☕', title: 'Сходи на зимнюю прогулку', desc: 'Оденься тепло и прогуляйся по заснеженному парку. Вдохни морозный воздух, насладись тишиной.' },
+            { day: 21, icon: '🎬', title: 'Устрой киновечер с близкими', desc: 'Попкорн, пледы, любимый фильм. Посмотрите что-то праздничное все вместе.' },
+            { day: 22, icon: '❤️', title: 'Скажи «спасибо» тем, кто рядом', desc: 'Не формально, а искренне. Расскажи, почему ты ценишь каждого из них.' },
+            { day: 23, icon: '🎠', title: 'Разбери лишнее и освободи пространство', desc: 'Отдай ненужные вещи, убери хлам. Новый год — время нового пространства!' },
+            { day: 24, icon: '⭐', title: 'Приготовь что-то особенное', desc: 'Блюдо, которое никогда не готовил(а). Экспериментируй на кухне — это весело!' },
+            { day: 25, icon: '🎄', title: 'Выбери традицию на Новый год', desc: 'Что будете делать каждый год? Смотреть определённый фильм, готовить особое блюдо, играть в игру?' },
+            { day: 26, icon: '🎆', title: 'Подумай, чего ты достиг(ла) в этом году', desc: 'Запиши 10 своих побед — больших и маленьких. Ты молодец, правда!' },
+            { day: 27, icon: '⭐', title: 'Сделай маленький подарок себе', desc: 'Ты это заслужил(а)! Книга, свеча, вкусняшка, массаж — что угодно, что порадует именно тебя.' },
+            { day: 28, icon: '🌿', title: 'Укрась ёлку', desc: 'Если ещё не украсил(а) — самое время! Включи праздничную музыку и наслаждайся процессом.' },
+            { day: 29, icon: '📷', title: 'Собери лучшие моменты года (фото)', desc: 'Создай альбом или коллаж из самых ярких фотографий этого года. Сколько всего произошло!' },
+            { day: 30, icon: '🎆', title: 'Загадай желание и настройся на праздник!', desc: 'Завтра Новый год! Напиши своё главное желание, зажги свечу и поверь — всё сбудется. ✨' }
+        ];
+
+        // Загрузка состояния из localStorage
+        let openedDoors = JSON.parse(localStorage.getItem('adventOpened')) || [];
+
+        // Создание мерцающих огоньков
+        function createLights() {
+            const lightsContainer = document.getElementById('lights');
+            for (let i = 0; i < 30; i++) {
+                const light = document.createElement('div');
+                light.className = 'light';
+                light.style.left = Math.random() * 100 + '%';
+                light.style.top = Math.random() * 100 + '%';
+                light.style.animationDelay = Math.random() * 3 + 's';
+                light.style.animationDuration = (2 + Math.random() * 3) + 's';
+                lightsContainer.appendChild(light);
+            }
+        }
+
+        // Создание снежинок
+        function createSnowflakes() {
+            const snowflakes = ['❄', '❅', '❆', '✻', '✼'];
+            for (let i = 0; i < 20; i++) {
+                const snowflake = document.createElement('div');
+                snowflake.className = 'snowflake';
+                snowflake.textContent = snowflakes[Math.floor(Math.random() * snowflakes.length)];
+                snowflake.style.left = Math.random() * 100 + '%';
+                snowflake.style.animationDuration = (5 + Math.random() * 10) + 's';
+                snowflake.style.animationDelay = Math.random() * 5 + 's';
+                snowflake.style.fontSize = (0.8 + Math.random() * 1.2) + 'rem';
+                document.body.appendChild(snowflake);
+            }
+        }
+
+        // Генерация конвертов
+        function renderEnvelopes() {
+            const grid = document.getElementById('advent-grid');
+            grid.innerHTML = '';
+
+            tasks.forEach((task) => {
+                const isOpened = openedDoors.includes(task.day);
+                
+                const container = document.createElement('div');
+                container.className = `envelope-container ${isOpened ? 'opened' : ''}`;
+                container.onclick = () => openEnvelope(task.day);
+
+                container.innerHTML = `
+                    <div class="envelope">
+                        <div class="envelope-front">
+                            <div class="day-number">${task.day}</div>
+                            <div class="envelope-icon">${task.icon}</div>
+                            <div class="envelope-text">${task.title}</div>
+                        </div>
+                        <div class="envelope-back">
+                            <div class="back-icon">${task.icon}</div>
+                            <div class="back-title">День ${task.day}</div>
+                            <div class="back-hint">Задание выполнено ✓</div>
+                        </div>
+                    </div>
+                `;
+
+                grid.appendChild(container);
+            });
+
+            updateProgress();
+        }
+
+        // Открытие конверта
+        function openEnvelope(day) {
+            const task = tasks.find(t => t.day === day);
+            
+            // Добавляем в открытые, если ещё не открыт
+            if (!openedDoors.includes(day)) {
+                openedDoors.push(day);
+                localStorage.setItem('adventOpened', JSON.stringify(openedDoors));
+            }
+
+            // Показываем модальное окно
+            document.getElementById('modal-body').innerHTML = `
+                <div style="text-align: center;">
+                    <div class="modal-icon">${task.icon}</div>
+                    <div class="modal-day">${task.day}</div>
+                    <h2>${task.title}</h2>
+                    <p>${task.desc}</p>
+                </div>
+            `;
+            document.getElementById('modal').classList.add('active');
+
+            // Обновляем визуал
+            renderEnvelopes();
+        }
+
+        // Закрытие модального окна
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        // Закрытие по клику вне модального окна
+        document.getElementById('modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Закрытие по Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // Обновление прогресса
+        function updateProgress() {
+            const count = openedDoors.length;
+            document.getElementById('opened-count').textContent = count;
+            document.getElementById('progress-fill').style.width = `${(count / 30) * 100}%`;
+        }
+
+        // Инициализация
+        createLights();
+        createSnowflakes();
+        renderEnvelopes();
+    </script>
+</body>
+</html>
